@@ -1,0 +1,191 @@
+[
+  {
+    "id": "8279f9d2-9ec3-4107-8ab1-5c3331865ba8",
+    "tableLabel": "Mario",
+    "items": [
+      {
+        "id": "m2",
+        "name": "Americano",
+        "price": 3,
+        "qty": 2
+      }
+    ],
+    "total": 0,
+    "note": "Double Shot semua",
+    "status": "done",
+    "createdAt": "2026-06-14T15:08:20.219Z",
+    "updatedAt": "2026-06-14T15:08:34.672Z"
+  },
+  {
+    "id": "149e0fc9-20f3-41ea-958b-3471e105af1f",
+    "tableLabel": "Bambang",
+    "items": [
+      {
+        "id": "m4",
+        "name": "Espresso",
+        "price": 4,
+        "qty": 2
+      }
+    ],
+    "total": 0,
+    "note": "",
+    "status": "done",
+    "createdAt": "2026-06-14T14:57:23.481Z",
+    "updatedAt": "2026-06-14T15:08:32.965Z"
+  },
+  {
+    "id": "d4089a18-ab68-46da-9466-bc95604c6b3b",
+    "tableLabel": "Edi Hartono",
+    "items": [
+      {
+        "id": "m1",
+        "name": "Latte",
+        "price": 2.5,
+        "qty": 2
+      }
+    ],
+    "total": 0,
+    "note": "Double Shot",
+    "status": "done",
+    "createdAt": "2026-06-14T14:53:12.718Z",
+    "updatedAt": "2026-06-14T15:08:42.804Z"
+  },
+  {
+    "id": "5def92d8-8786-4c14-9b83-56a280e55c70",
+    "tableLabel": "Sore",
+    "items": [
+      {
+        "id": "m2",
+        "name": "Americano",
+        "price": 3,
+        "qty": 1
+      },
+      {
+        "id": "m7",
+        "name": "Milk",
+        "price": 4,
+        "qty": 2
+      },
+      {
+        "id": "m5",
+        "name": "Ice Latte",
+        "price": 4,
+        "qty": 1
+      }
+    ],
+    "total": 0,
+    "note": "",
+    "status": "done",
+    "createdAt": "2026-06-14T14:52:46.199Z",
+    "updatedAt": "2026-06-14T15:08:42.198Z"
+  },
+  {
+    "id": "df924612-c672-4735-ab65-ed750e9a7e8d",
+    "tableLabel": "Bambang",
+    "items": [
+      {
+        "id": "m4",
+        "name": "Espresso",
+        "price": 4,
+        "qty": 2
+      }
+    ],
+    "total": 0,
+    "note": "",
+    "status": "done",
+    "createdAt": "2026-06-14T14:52:39.031Z",
+    "updatedAt": "2026-06-14T15:08:41.407Z"
+  },
+  {
+    "id": "670a5177-1d5d-4350-b924-25a9bcee4198",
+    "tableLabel": "Angel",
+    "items": [
+      {
+        "id": "m6",
+        "name": "Ice Americano",
+        "price": 4,
+        "qty": 1
+      },
+      {
+        "id": "m5",
+        "name": "Ice Latte",
+        "price": 4,
+        "qty": 1
+      }
+    ],
+    "total": 0,
+    "note": "",
+    "status": "done",
+    "createdAt": "2026-06-14T14:52:22.946Z",
+    "updatedAt": "2026-06-14T14:58:33.347Z"
+  },
+  {
+    "id": "6824417c-c86d-4afd-8c95-85c4b2431634",
+    "tableLabel": "Herlambang",
+    "items": [
+      {
+        "id": "m3",
+        "name": "Cappuccino",
+        "price": 3.5,
+        "qty": 2
+      },
+      {
+        "id": "m4",
+        "name": "Espresso",
+        "price": 4,
+        "qty": 1
+      }
+    ],
+    "total": 0,
+    "note": "",
+    "status": "done",
+    "createdAt": "2026-06-14T14:52:18.967Z",
+    "updatedAt": "2026-06-14T15:08:26.412Z"
+  },
+  {
+    "id": "9d59477f-017d-452c-a4f3-472f36076a49",
+    "tableLabel": "Mas Edo",
+    "items": [
+      {
+        "id": "m1",
+        "name": "Latte",
+        "price": 2.5,
+        "qty": 1
+      },
+      {
+        "id": "m2",
+        "name": "Americano",
+        "price": 3,
+        "qty": 2
+      }
+    ],
+    "total": 0,
+    "note": "",
+    "status": "done",
+    "createdAt": "2026-06-14T14:52:08.784Z",
+    "updatedAt": "2026-06-14T14:58:31.697Z"
+  },
+  {
+    "id": "08dce5d5-da8b-4f5e-8822-bee6072b840b",
+    "tableLabel": "Mamam",
+    "items": [
+      {
+        "id": "m1",
+        "name": "Latte",
+        "price": 2.5,
+        "qty": 1
+      },
+      {
+        "id": "m2",
+        "name": "Americano",
+        "price": 3,
+        "qty": 1
+      }
+    ],
+    "total": 0,
+    "note": "",
+    "status": "done",
+    "createdAt": "2026-06-14T14:46:03.659Z",
+    "updatedAt": "2026-06-14T14:51:55.531Z"
+  }
+]

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Display — Order Status</title>
+<script src="/socket.io/socket.io.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1e242d;
+    --border: #2a3140;
+    --accent: #c8a96e;
+    --text: #e8e6e1;
+    --text-muted: #6e7885;
+    --pending-bg: rgba(224,160,64,0.1);
+    --pending-border: rgba(224,160,64,0.35);
+    --pending-text: #e0a040;
+    --ready-bg: rgba(82,183,136,0.15);
+    --ready-border: rgba(82,183,136,0.4);
+    --ready-text: #52b788;
+    --done-bg: rgba(60,60,60,0.3);
+    --done-border: #2a3140;
+    --done-text: #555;
+    --radius: 12px;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+  }
+
+  /* ── Header ── */
+  header {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 20px; height: 56px; gap: 14px;
+    position: sticky; top: 0; z-index: 10;
+  }
+  header h1 { font-family: 'Space Grotesk', sans-serif; font-size: 18px; font-weight: 700; color: var(--accent); }
+  .header-badge { background: var(--surface2); border: 1px solid var(--border); color: var(--text-muted); font-size: 11px; padding: 3px 8px; border-radius: 20px; }
+  .spacer { flex: 1; }
+  .conn-dot { width: 8px; height: 8px; border-radius: 50%; background: #e05252; transition: background 0.3s; }
+  .conn-dot.connected { background: #52b788; }
+  .conn-label { font-size: 12px; color: var(--text-muted); }
+  .clear-done-btn {
+    background: transparent; border: 1px solid var(--border); color: var(--text-muted);
+    font-family: 'Inter', sans-serif; font-size: 12px; padding: 5px 12px; border-radius: 6px;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .clear-done-btn:hover { border-color: #e05252; color: #e05252; }
+
+  /* ── Pending Summary Banner ── */
+  #pending-summary {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 10px 20px; display: none; flex-direction: column; gap: 6px;
+  }
+  #pending-summary.visible { display: flex; }
+  .summary-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--pending-text); margin-bottom: 2px; }
+  .summary-items { display: flex; flex-wrap: wrap; gap: 6px; }
+  .summary-chip {
+    background: var(--pending-bg); border: 1px solid var(--pending-border); color: var(--pending-text);
+    font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .summary-chip .chip-qty { background: rgba(224,160,64,0.25); border-radius: 10px; padding: 1px 6px; font-size: 11px; }
+
+  /* ── Filter bar ── */
+  .filter-bar {
+    display: flex; gap: 8px; padding: 10px 20px;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+  }
+  .filter-btn {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text-muted);
+    font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500;
+    padding: 5px 14px; border-radius: 20px; cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .filter-btn .count { background: var(--border); color: var(--text-muted); border-radius: 10px; padding: 1px 6px; font-size: 10px; }
+  .filter-btn.active, .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .filter-btn.active .count { background: rgba(200,169,110,0.15); color: var(--accent); }
+
+  /* ── Board ── */
+  #board {
+    flex: 1; padding: 16px 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px; align-content: start;
+  }
+
+  /* ── Order card ── */
+  .order-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); display: flex; flex-direction: column;
+    overflow: hidden; transition: border-color 0.2s, box-shadow 0.2s, opacity 0.2s;
+    animation: slideIn 0.2s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .order-card.status-pending { border-color: var(--pending-border); }
+  .order-card.status-ready   { border-color: var(--ready-border); box-shadow: 0 0 14px rgba(82,183,136,0.12); }
+  .order-card.status-done    { opacity: 0.4; }
+
+  .card-header {
+    display: flex; align-items: center; padding: 10px 12px; gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Queue number badge */
+  .queue-num {
+    font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 700;
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .status-pending .queue-num { background: var(--pending-bg); color: var(--pending-text); border: 1px solid var(--pending-border); }
+  .status-ready   .queue-num { background: var(--ready-bg);   color: var(--ready-text);   border: 1px solid var(--ready-border); }
+  .status-done    .queue-num { background: var(--done-bg);    color: var(--done-text);    border: 1px solid var(--done-border); }
+
+  .card-customer { font-family: 'Space Grotesk', sans-serif; font-size: 14px; font-weight: 700; flex: 1; }
+  .card-time { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+  .card-del { cursor: pointer; color: var(--text-muted); font-size: 15px; padding: 2px 4px; border-radius: 4px; transition: color 0.15s; line-height: 1; }
+  .card-del:hover { color: #e05252; }
+
+  .card-items { padding: 8px 12px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+  .card-item { display: flex; align-items: center; gap: 8px; font-size: 13px; line-height: 1.4; }
+  .card-item .qty {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--accent); font-weight: 700; font-size: 11px;
+    padding: 1px 7px; border-radius: 10px; min-width: 28px;
+    text-align: center; flex-shrink: 0;
+  }
+
+  .card-note {
+    margin: 0 12px 8px; background: var(--surface2); border-left: 3px solid #8a7049;
+    padding: 5px 9px; font-size: 12px; color: var(--text-muted);
+    border-radius: 0 6px 6px 0; font-style: italic;
+  }
+
+  .card-footer {
+    padding: 8px 12px; border-top: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .status-badge {
+    font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .status-badge.pending { background: var(--pending-bg); color: var(--pending-text); border: 1px solid var(--pending-border); }
+  .status-badge.ready   { background: var(--ready-bg);   color: var(--ready-text);   border: 1px solid var(--ready-border); }
+  .status-badge.done    { background: var(--done-bg);    color: var(--done-text);    border: 1px solid var(--done-border); }
+  .spacer-flex { flex: 1; }
+
+  .next-btn {
+    border: none; border-radius: 8px; padding: 8px 16px;
+    font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: opacity 0.15s, transform 0.1s;
+  }
+  .next-btn:active { transform: scale(0.97); }
+  .next-btn.pending { background: var(--pending-text); color: #000; }
+  .next-btn.ready   { background: var(--ready-text);   color: #000; }
+  .next-btn.done    { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); cursor: default; }
+  .next-btn:hover:not(.done) { opacity: 0.85; }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>☕ Café Display</h1>
+  <span class="header-badge">Bar / Kitchen</span>
+  <div class="spacer"></div>
+  <button class="clear-done-btn" id="clear-done-btn">Clear Done</button>
+  <div class="conn-dot" id="conn-dot"></div>
+  <span class="conn-label" id="conn-label">Connecting…</span>
+</header>
+
+<div id="pending-summary">
+  <div class="summary-title">⏳ Items Pending</div>
+  <div class="summary-items" id="summary-items"></div>
+</div>
+
+<div class="filter-bar">
+  <button class="filter-btn active" data-filter="all">All <span class="count" id="cnt-all">0</span></button>
+  <button class="filter-btn" data-filter="pending">Pending <span class="count" id="cnt-pending">0</span></button>
+  <button class="filter-btn" data-filter="ready">Ready <span class="count" id="cnt-ready">0</span></button>
+  <button class="filter-btn" data-filter="done">Done <span class="count" id="cnt-done">0</span></button>
+</div>
+
+<div id="board"></div>
+
+<script>
+  const socket = io();
+  let orders = [];
+  let activeFilter = "all";
+
+  socket.on("connect",    () => setConn(true));
+  socket.on("disconnect", () => setConn(false));
+  function setConn(ok) {
+    document.getElementById("conn-dot").className = "conn-dot" + (ok ? " connected" : "");
+    document.getElementById("conn-label").textContent = ok ? "Live" : "Offline";
+  }
+
+  socket.on("init",           (data) => { orders = data.orders; render(); });
+  socket.on("order_added",    (o)    => { orders.unshift(o); render(); });
+  socket.on("order_updated",  (o)    => { const i = orders.findIndex(x => x.id === o.id); if (i !== -1) orders[i] = o; render(); });
+  socket.on("order_deleted",  ({ orderId }) => { orders = orders.filter(o => o.id !== orderId); render(); });
+  socket.on("orders_cleared", ({ orders: o }) => { orders = o; render(); });
+
+  document.querySelectorAll(".filter-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      activeFilter = btn.dataset.filter;
+      render();
+    });
+  });
+
+  document.getElementById("clear-done-btn").addEventListener("click", () => {
+    if (confirm("Remove all completed orders?")) socket.emit("clear_done");
+  });
+
+  const NEXT_LABEL = { pending: "✓ Mark Ready", ready: "✓ Done", done: "Completed" };
+
+  // Assign queue numbers per-status based on FIFO order across ALL orders
+  // so queue numbers stay stable regardless of which filter is active
+  function computeQueueNums() {
+    const sortFIFO = (a, b) => new Date(a.createdAt) - new Date(b.createdAt);
+    const byStatus = { pending: [], ready: [], done: [] };
+    orders.forEach(o => { if (byStatus[o.status]) byStatus[o.status].push(o); });
+    const queueMap = {};
+    ["pending", "ready", "done"].forEach(status => {
+      byStatus[status].sort(sortFIFO).forEach((o, idx) => {
+        queueMap[o.id] = idx + 1;
+      });
+    });
+    return queueMap;
+  }
+
+  function render() {
+    const queueMap = computeQueueNums();
+    updateCounts();
+    renderPendingSummary();
+
+    // "All" omits done; other filters show only that status
+    let filtered;
+    if (activeFilter === "all") {
+      // Show pending + ready, sorted: pending first (FIFO), then ready (FIFO)
+      const sortFIFO = (a, b) => new Date(a.createdAt) - new Date(b.createdAt);
+      const pending = orders.filter(o => o.status === "pending").sort(sortFIFO);
+      const ready   = orders.filter(o => o.status === "ready").sort(sortFIFO);
+      filtered = [...ready, ...pending];
+    } else {
+      const sortFIFO = (a, b) => new Date(a.createdAt) - new Date(b.createdAt);
+      filtered = orders.filter(o => o.status === activeFilter).sort(sortFIFO);
+    }
+
+    const board = document.getElementById("board");
+    board.innerHTML = "";
+    filtered.forEach(order => {
+      board.appendChild(buildCard(order, queueMap[order.id]));
+    });
+  }
+
+  function buildCard(order, queueNum) {
+    const card = document.createElement("div");
+    card.className = `order-card status-${order.status}`;
+    card.dataset.id = order.id;
+
+    const time = new Date(order.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const name = order.customerName || order.tableLabel || "Guest";
+    const isDone = order.status === "done";
+
+    card.innerHTML = `
+      <div class="card-header">
+        <span class="queue-num">${queueNum}</span>
+        <span class="card-customer">👤 ${name}</span>
+        <span class="card-time">${time}</span>
+        <span class="card-del" title="Delete order">✕</span>
+      </div>
+      <div class="card-items">
+        ${order.items.map(i => `
+          <div class="card-item">
+            <span class="qty">${i.qty}×</span>
+            <span>${i.name}</span>
+          </div>
+        `).join("")}
+      </div>
+      ${order.note ? `<div class="card-note">📝 ${order.note}</div>` : ""}
+      <div class="card-footer">
+        <span class="status-badge ${order.status}">${order.status}</span>
+        <span class="spacer-flex"></span>
+        <button class="next-btn ${order.status}" ${isDone ? "disabled" : ""}>
+          ${NEXT_LABEL[order.status]}
+        </button>
+      </div>
+    `;
+
+    card.querySelector(".next-btn").addEventListener("click", () => {
+      if (!isDone) socket.emit("next_status", { orderId: order.id });
+    });
+    card.querySelector(".card-del").addEventListener("click", () => {
+      if (confirm(`Delete order for ${name}?`)) socket.emit("delete_order", { orderId: order.id });
+    });
+
+    return card;
+  }
+
+  function updateCounts() {
+    const counts = { pending: 0, ready: 0, done: 0 };
+    orders.forEach(o => { if (counts[o.status] !== undefined) counts[o.status]++; });
+    document.getElementById("cnt-all").textContent     = counts.pending + counts.ready; // All omits done
+    document.getElementById("cnt-pending").textContent = counts.pending;
+    document.getElementById("cnt-ready").textContent   = counts.ready;
+    document.getElementById("cnt-done").textContent    = counts.done;
+  }
+
+  function renderPendingSummary() {
+    const summary   = document.getElementById("pending-summary");
+    const container = document.getElementById("summary-items");
+    const pending   = orders.filter(o => o.status === "pending");
+    if (pending.length === 0) { summary.classList.remove("visible"); return; }
+    const totals = {};
+    pending.forEach(o => o.items.forEach(i => { totals[i.name] = (totals[i.name] || 0) + i.qty; }));
+    container.innerHTML = Object.entries(totals)
+      .sort((a, b) => b[1] - a[1])
+      .map(([name, qty]) => `
+        <div class="summary-chip"><span>${name}</span><span class="chip-qty">${qty}</span></div>
+      `).join("");
+    summary.classList.add("visible");
+  }
+</script>
+</body>
+</html>
