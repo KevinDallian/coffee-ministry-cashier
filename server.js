@@ -145,20 +145,37 @@ server.listen(PORT, "0.0.0.0", () => {
       }
     }
   }
-  const pcURL = `http://${localIP}:${PORT}/cashier`
-  const tableURL = `http://${localIP}:${PORT}/display`
-  console.log("\n╔══════════════════════════════════════════╗");
-  console.log("║       ☕  Café Cashier System             ║");
-  console.log("╠══════════════════════════════════════════╣");
-  console.log(`║  PC Cashier  → http://${localIP}:${PORT}/cashier`);
-  console.log(`║  Tablet View → http://${localIP}:${PORT}/display`);
-  console.log("╚══════════════════════════════════════════╝\n");
+  const qrcode = require("qrcode-terminal");
+  const pcURL = `http://${localIP}:${PORT}/cashier`;
+  const tableURL = `http://${localIP}:${PORT}/display`;
 
-  const qrcode = require('qrcode-terminal');
+  console.clear();
 
-  console.log(`PC Cashier URL: ${pcURL}`);
+  console.log(`
+  ╔══════════════════════════════════════════════════════════════╗
+  ║                    ☕ Café Cashier System                    ║
+  ╠══════════════════════════════════════════════════════════════╣
+  ║  🟢 Server Status : RUNNING                                  ║
+  ║  💻 PC Cashier    : ${pcURL.padEnd(36)}     ║
+  ║  📱 Tablet View   : ${tableURL.padEnd(36)}     ║
+  ╚══════════════════════════════════════════════════════════════╝
+  `);
+
+  console.log("┌─────────────────────────────────────────┐");
+  console.log("│ 💻 PC Cashier QR Code                   │");
+  console.log("└─────────────────────────────────────────┘");
   qrcode.generate(pcURL, { small: true });
 
-  console.log(`Tablet View URL: ${tableURL}`);
+  console.log("\n");
+
+  console.log("┌─────────────────────────────────────────┐");
+  console.log("│ 📱 Tablet Display QR Code               │");
+  console.log("└─────────────────────────────────────────┘");
   qrcode.generate(tableURL, { small: true });
+
+  console.log(`
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Scan the QR code from another device connected to the same Wi-Fi
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  `);
 });
