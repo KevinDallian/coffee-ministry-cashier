@@ -1,0 +1,16 @@
+# Node.js
+node_modules/
+npm-debug.log*
+*.log
+
+# Application Data
+orders.json
+
+# Generated Reports
+exports/
+
+# Dependency lock file (optional, but common for smaller projects)
+package-lock.json
+
+# macOS specific files
+.DS_Store

@@ -4,6 +4,7 @@ const { Server } = require("socket.io");
 const fs = require("fs");
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
+const { exec } = require("child_process"); // Import child_process for executing shell commands
 
 const app = express();
 const server = http.createServer(app);
@@ -35,13 +36,13 @@ let orders = loadOrders();
 
 // ── Default menu ─────────────────────────────────────────────────────────────
 const DEFAULT_MENU = [
-  { id: "m1", category: "Hot", name: "Latte", price: 2.5 },
-  { id: "m2", category: "Hot", name: "Americano", price: 3.0 },
-  { id: "m3", category: "Hot", name: "Cappuccino", price: 3.5 },
+  { id: "m1", category: "Hot", name: "Hot Latte", price: 2.5 },
+  { id: "m2", category: "Hot", name: "Hot Americano", price: 3.0 },
+  { id: "m3", category: "Hot", name: "Hot Cappuccino", price: 3.5 },
   { id: "m4", category: "Hot", name: "Espresso", price: 4.0 },
   { id: "m5", category: "Ice", name: "Ice Latte", price: 4.0 },
   { id: "m6", category: "Ice", name: "Ice Americano", price: 4.0 },
-  { id: "m7", category: "Kids", name: "Milk", price: 4.0 },
+  { id: "m7", category: "Kids", name: "Milk", price: 4.0 }
 ];
 
 const MENU_FILE = path.join(__dirname, "menu.json");
@@ -65,6 +66,20 @@ app.get("/display", (req, res) =>
 
 app.get("/api/menu", (req, res) => res.json(menu));
 app.get("/api/orders", (req, res) => res.json(orders));
+
+// New endpoint to trigger Excel report generation
+app.post("/api/generate-excel", (req, res) => {
+  console.log("Received request to generate Excel report.");
+  exec("node export_orders.js", (error, stdout, stderr) => {
+    if (error) {
+      console.error(`exec error: ${error}`);
+      console.error(`stderr: ${stderr}`);
+      return res.status(500).json({ message: "Failed to generate Excel report.", error: stderr });
+    }
+    console.log(`stdout: ${stdout}`);
+    res.status(200).json({ message: "Excel report generated successfully!", output: stdout });
+  });
+});
 
 // ── Socket.io ─────────────────────────────────────────────────────────────────
 io.on("connection", (socket) => {
