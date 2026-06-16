@@ -7,7 +7,8 @@ PC handles order entry; tablet handles order status toggling.
 
 ## Requirements
 
-- [Node.js](https://nodejs.org) v16 or later (installed on your PC)
+- [Node.js](https://nodejs.org) **v14.0.0** (Note: Node.js 14 reached End-of-Life in April 2023 and is no longer recommended due to security risks. Later versions are highly recommended for new projects.)
+- Supports **Windows 7 32-bit** (via Node.js v14)
 - PC and tablet connected to the **same Wi-Fi network**
 
 ---
@@ -58,6 +59,28 @@ When the server starts, it prints the URLs:
 
 ---
 
+## Excel Report Generation
+
+This system includes a script (`export_orders.js`) to generate a detailed Excel (.xlsx) report of all orders.
+
+### Features:
+-   **Dynamic Filename**: Reports are saved with a timestamp in the format "DD MMMM YYYY - HH:mm - orders-report.xlsx".
+-   **Comprehensive Data**: Includes a dashboard summary, a main table of all orders, and detailed summary sections for menu items and other/unknown items.
+-   **Themed Formatting**:
+    -   Header Fill: Dark Green (`#264e13`) with White, bold Arial font.
+    -   Alternating data rows: Light Gray (`#e2e7df`) and White with Arial font.
+    -   Columns auto-fit to content and header length.
+    -   `Created At` and `Updated At` columns display time only (`hh:mm:ss`).
+    -   Summary and "Other Items" tables are positioned starting at column `O`.
+-   **Print-Friendly Layout**: Configured for landscape orientation, fit to page width, repeating header row, and A4 margins.
+
+### How to Generate:
+1.  On the **Cashier View (PC)**, click the "**Generate Excel Report**" button in the header.
+2.  Confirm the prompt.
+3.  The report will be saved to the `./exports/` directory in your project root.
+
+---
+
 ## Customizing the Menu
 
 Edit `menu.json` (created after first run) or modify `DEFAULT_MENU` in `server.js`:
@@ -82,11 +105,15 @@ To wipe all orders, delete `orders.json` and restart.
 
 ```
 cashier/
+├── .gitignore         ← Specifies intentionally untracked files
 ├── server.js          ← Node.js + Express + Socket.io server
-├── orders.json        ← Auto-created, persists orders
+├── export_orders.js   ← Script to generate Excel reports
+├── orders.json        ← Auto-created, persists orders (ignored by Git)
 ├── menu.json          ← Auto-created, edit to customize menu
 ├── package.json
-└── public/
-    ├── cashier.html   ← PC cashier view
-    └── display.html   ← Tablet display view
+├── package-lock.json  ← Dependency lock file (ignored by Git)
+├── public/
+│   ├── cashier.html   ← PC cashier view
+│   └── display.html   ← Tablet display view
+└── exports/           ← Directory for generated Excel reports (ignored by Git)
 ```
