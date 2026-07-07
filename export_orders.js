@@ -431,7 +431,7 @@ async function exportExcel(workbook) {
 
     // Generate dynamic filename with current date and time
     const timestamp = moment().format('DD MMMM YYYY');
-    const dynamicExportFileName = `${timestamp}.xslx`;
+    const dynamicExportFileName = `${timestamp}.xlsx`;
     const dynamicExportFilePath = path.join(EXPORT_DIR, dynamicExportFileName);
 
     // Write the workbook to the specified file path

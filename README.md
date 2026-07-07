@@ -7,8 +7,8 @@ PC handles order entry; tablet handles order status toggling.
 
 ## Requirements
 
-- [Node.js](https://nodejs.org) **v14.0.0** (Note: Node.js 14 reached End-of-Life in April 2023 and is no longer recommended due to security risks. Later versions are highly recommended for new projects.)
-- Supports **Windows 7 32-bit** (via Node.js v14)
+- [Node.js](https://nodejs.org) **v12.0.0** or higher (Note: Node.js 12 reached End-of-Life in April 2022 and is no longer recommended due to security risks.)
+- Supports **Windows 7 32-bit** (via Node.js v12)
 - PC and tablet connected to the **same Wi-Fi network**
 
 ---

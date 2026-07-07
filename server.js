@@ -154,7 +154,8 @@ server.listen(PORT, "0.0.0.0", () => {
   let localIP = "localhost";
   for (const iface of Object.values(nets)) {
     for (const net of iface) {
-      if (net.family === "IPv4" && !net.internal) {
+      const family = String(net.family);
+      if ((family === "IPv4" || family === "4") && !net.internal) {
         localIP = net.address;
         break;
       }
